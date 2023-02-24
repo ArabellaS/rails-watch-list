@@ -9,13 +9,20 @@ require 'open-uri'
 require 'json'
 
 def new_movies
+  Bookmark.destroy_all
   Movie.destroy_all
   url = "http://tmdb.lewagon.com/movie/top_rated"
   movies = URI.open(url).read
   movie_list = JSON.parse(movies).transform_keys(&:to_sym)
-  flims = movie_list[:results].map {|movie|movie.transform_keys(&:to_sym) }
+  flims = movie_list[:results]
   flims.each do |movie|
-    Movie.create!(title: movie[:original_title], overview: movie[:overview], rating: movie[:vote_average], poster_url: movie[:poster_path])
+    base_poster_url = "https://image.tmdb.org/t/p/w500"
+    Movie.create!(
+      title: movie['title'],
+      overview: movie['overview'],
+      poster_url: "#{base_poster_url}#{movie['backdrop_path']}",
+      rating: movie['vote_average']
+    )
   end
 end
 
